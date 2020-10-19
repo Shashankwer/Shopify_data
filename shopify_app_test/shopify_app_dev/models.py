@@ -305,6 +305,7 @@ class AbandonCartLineItem(models.Model):
     variant_title = models.CharField(max_length=200,default='')
     vendor = models.CharField(max_length=200,default='')
 class OrderLineItem(models.Model):
+    order_id = models.ForeignKey(Order,on_delete=models.CASCADE)
     fullfilment_quantity=models.CharField(max_length=200,default='')
     fullfilmen_service = models.CharField(max_length=200,default='')
     fullfilment_status = models.CharField(max_length=20,default='')
