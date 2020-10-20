@@ -6,7 +6,7 @@ from requests.exceptions import HTTPError
 import shopify
 from .models import StoreToken
 from django.utils import timezone
-from .models import PriceRule,PriceRuleSavedSearch,DiscountCode,MarketingEvents,Address,Customer,CustomerAddress,PrerequisiteCustomer,AbandonCart,Order,ClientOrder,OrderdiscountCode,Collection,PriceRuleEntity,Product,PrerequisiteProducts,PriceRuleProduct,ProductImage,Collect,CollectionImage,OrderLineItem,AbandonCartLineItem,PriceProductVariant,PrerequisiteVariants,OrderLineItem,OrderLocation,orderNote,orderTag,ProductVariant,PrerequisiteVariants
+from .models import PriceRule,PriceRuleSavedSearch,DiscountCode,MarketingEvents,Address,Customer,CustomerAddress,PrerequisiteCustomer,AbandonCart,Order,ClientOrder,OrderdiscountCode,Collection,PriceRuleEntity,Product,PrerequisiteProducts,PriceRuleProduct,ProductImage,Collect,CollectionImage,OrderLineItem,AbandonCartLineItem,PriceProductVariant,PrerequisiteVariants,OrderLineItem,orderNote,orderTag,ProductVariant,PrerequisiteVariants,OrderLocation
 
 
 class ShopifyStoreClient():
@@ -30,6 +30,81 @@ class ShopifyStoreClient():
         shopify.ShopifyResource.clear_session()
         return shop
 
+    def getProduct(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        products = shopify.Product.current()
+        shopify.ShopifyResource.clear_session()
+        return products
+    
+    def getCustomer(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        customers = shopify.Customer.current()
+        shopify.ShopifyResource.clear_session()
+        return customers
+
+    def getDiscountCode(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        discountCode = shopify.DiscountCode.current()
+        shopify.ShopifyResource.clear_session()
+        return discountCode
+
+    def getMarketingEvents(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        marketingEvents = shopify.MarketingEvent.current()
+        shopify.ShopifyResource.clear_session()
+        return marketingEvents
+
+    def getOrder(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        order = shopify.Order.current()
+        shopify.ShopifyResource.clear_session()
+        return order
+
+    def getCollect(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        collect = shopify.Collect.current()
+        shopify.ShopifyResource.clear_session()
+        return collect
+
+    def getCollection(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        collection = shopify.CollectionListing.current()
+        shopify.ShopifyResource.clear_session()
+        return collection        
+
+    def getProductImages(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        productImage = shopify.ProductImage.current()
+        shopify.ShopifyResource.clear_session()
+        return productImages
+
+    def getProductVariants(self):
+        shopify.Session.setup(api_key=self.api_key, secret=self.secret_key)
+        session = shopify.Session(self.shop_url, self.api_version, self.access_token)
+        shopify.ShopifyResource.activate_session(session)
+        productVariant = shopify.Variant.current()
+        shopify.ShopifyResource.clear_session()
+        return productVariant
+    
+    
+    
+    
     def loadPriceRule(self,id,allocation_method = '',created_at=timezone.now,updated_at = timezone.now,customer_selection = '',ends_at = timezone.now,once_per_customer = True,prerequisite_quantity_range = 1,prerequisite_shipping_price_range = '',prerequisite_subtotal_range = 0.0,prerequisite_purchase = 0.0,starts_at = timezone.now,target_selection = '',target_type = '',title= '',usage_limit = 10):
         obj = PriceRule(allocation_method,created_at,updated_at,customer_selection,ends_at,id,once_per_customer,prerequisite_purchase,prerequisite_quantity_range,prerequisite_shipping_price_range,prerequisite_subtotal_range,prerequisite_purchase,starts_at,target_selection,target_type,title,usage_limit)
         obj.save()
@@ -137,26 +212,51 @@ class ShopifyStoreClient():
         obj = CollectionImage(created_at, collection_obj, src, width, height, alt)
         obj.save()
 
-    def loadOrderLineItem(self,id,order_id,product_id,variant_id,fullfilment_quantity='',fullfilmen_service = '',fullfilment_status = '',vendor = '',name = '',gift_card = '',properties = '',taxable = False,tip_payment_gateway = '',tip_payment_method = '',total_discount_amount = 0.0):
-        pass
+    def loadOrderLineItem(self,id,order_id,product_id,variant_id,fullfilment_quantity='',fullfilment_service = '',fullfilment_status = '',vendor = '',name = '',gift_card = '',properties = '',taxable = False,tip_payment_gateway = '',tip_payment_method = '',total_discount_amount = 0.0,properties=''):
+        product_obj = Product.objects.filter(id=product_id)
+        product_variant_obj = ProductImage.objects.filter(id=variant_id)
+        order_obj = Order.objects.filter(id=order_id)
+        obj = OrderLineItem(id=id, name=name, order_id=order_obj, vendor=vendor, product_id=product_obj, taxable=taxable, variant_id=product_variant_obj, fullfilment_quantity=fullfilment_quantity, fullfilmen_service=fullfilment_service, fullfilment_status=fullfilment_status, gift_card=gift_card, properties=properties, tip_payment_gateway=tip_payment_gateway, tip_payment_method=tip_payment_method, total_discount_amount=total_discount_amount)
+        obj.save()
 
-    def loadorderLocation(self,OrderLocation,lineitem_id,country_code = '',province_code = '',name = '',address1 = '',address2 = '',city = '',zip_code = ''):
-        pass
+
+    def loadorderLocation(self,lineitem_id,country_code = '',province_code = '',name = '',address1 = '',address2 = '',city = '',zip_code = ''):
+        OrderLineItem_obj = OrderLineItem.objects.filter(id=lineitem_id)
+        obj = OrderLocation(address1=address1, address2=address2, city=city, province_code=province_code, country_code=country_code, name=name, lineitem_id=OrderLineItem_obj, zip_code=zip_code)
+        obj.save()
+    
 
     def loadorderNote(self,order_id,note_name = '',note_value = ''):
-        pass
+        order_obj = Order.objects.filter(id=order_id)
+        obj = orderNote(order_id=order_obj, note_name=note_name, note_value=note_value)
+        obj.save()
 
     def loadorderTag(self,order_id,tag_name = ''):
-        pass
+        order_obj = Order.objects.filter(id=order_id)
+        obj = orderTag(order_id=order_obj, tag_name=tag_name)
+        obj.save()
 
     def loadProductVariant(self,id,image_id,barcode =  '',compare_at_price = 0.0,fullfillment_service=  '',grams =  0.0,inventory_item_id='',position ='',sku = '' ,taxable = False,title = '',updated_at = timezone.now,weight = 0.0,weight_unit = 0.0):
-        pass
+        productImage_obj = ProductImage.objects.filter(id=image_id)
+        obj = ProductVariant(updated_at=updated_at, id=id, title=title, position=position, barcode=barcode, compare_at_price=compare_at_price, fullfillment_service=fullfillment_service, grams=grams, image_id=productImage_obj, inventory_item_id=inventory_item_id, sku=sku, taxable=taxable, weight=weight, weight_unit=weight_unit)
+        obj.save()
+        
 
     def loadPrerequisiteVariants(self,pricerule_id,varaint_id):
-        pass
+        pricerule_obj = PriceRule.objects.filter(id=pricerule_id)
+        productvariant_obj = ProductVariant.objects.filter(id=varaint_id)
+        obj = PrerequisiteVariants(pricerule_obj,productvariant_obj)
+        obj.save()
 
     def loadPriceProductVariant(self,price_rule_id,product_variant_id):
-        pass
+        pricerule_obj = PriceRule.objects.filter(id=pricerule_id)
+        productvariant_obj = ProductVariant.objects.filter(id=varaint_id)
+        obj = PriceProductVariant(pricerule_obj,productvariant_obj)
+        obj.save()
 
     def loadAbandonCartLineItem(self,abandon_cart_id,variant_id,fullfillment_service = '',fullfillment_status = '',required_shipping = False,sku = '',title = '',variant_title = '',vendor = ''):
-        pass
+        abandon_card_obj = AbandonCart.objects.filter(id=abandon_cart_id)
+        product_variant_obj = ProductVariant.objects.filter(id=variant_id)
+        obj = AbandonCartLineItem(title=title, fullfillment_status=fullfillment_status, vendor=vendor, fullfillment_service=fullfillment_service, sku=sku, abandon_cart_id=abandon_card_obj, required_shipping=required_shipping, variant_id=product_variant_obj, variant_title=variant_title)
+        obj.save()
+        

@@ -52,6 +52,72 @@ def get_shop_details():
         print("Success!!")
         return STORE_CLIENT.getStore()
     return "Error"
+
+def get_product_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getProduct()
+    return "Error"
+
+def get_customer_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getCustomer()
+    return "Error"
+
+def get_discountCode_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getDiscountCode()
+    return "Error"
+
+def get_marketingEvents_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getMarketingEvents()
+    return "Error"
+
+def get_order_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getOrder()
+    return "Error"
+
+def get_collect_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getCollect()
+    return "Error"
+
+def get_collection_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getCollection()
+    return "Error"
+
+def get_productImage_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.getProductImages()
+    return "Error"
+
+def get_productVariants_details():
+    if isAppInstalled():
+        print("Success!!")
+        return STORE_CLIENT.productVariant()
+    return "Error"
+
+"""
+MarketingEvents
+Customer-->Address
+Collect-->Collection-->CollectionImage
+Collect-->Product-->ProductImage-->ProductVariant
+PriceRule--> PriceRuleSavedSearch --->PrerequisiteCustomer-->PriceRuleEntity-->PrerequisiteProducts-->PriceRuleProduct-->PrerequisiteVariants-->PriceProductVariant-->DiscountCode
+AbandonCart-->AbandonCartLineItem
+Order  -->OrderLocation-->orderNote-->orderTag-->OrderLineItem
+ClientOrder
+OrderdiscountCode
+"""
    
     
 
@@ -66,3 +132,4 @@ def verify_hmac(data:bytes,orig_hmac:str)->bool:
 def is_valid_shop(shop:str)-> bool:
     shopname_regex = r'[a-zA-Z0-9][a-zA-Z0-9\-]*\.myshopify\.com[\/]?'
     return re.match(shopname_regex,shop)
+
