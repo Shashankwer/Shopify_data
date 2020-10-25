@@ -32,19 +32,20 @@ class PriceRuleSavedSearch(models.Model):
 
 class DiscountCode(models.Model):
     id = models.CharField(max_length=200,primary_key=True)
-    price_rule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    price_rule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
     code = models.CharField(max_length=200)
     useage_count = models.IntegerField(default=0)
     created_at = models.DateField(default=timezone.now)
     updated_at = models.DateField(default=timezone.now)
 
 class MarketingEvents(models.Model):
+    id = models.CharField(max_length=200,primary_key=True)
     remote_id = models.CharField(max_length=200,default='')
     event_type = models.CharField(max_length=100,default='')
     marketing_channel = models.CharField(max_length=10,default='')
-    paid = models.CharField(max_length=10,default='')
-    referrring_domain = models.CharField(max_length=1000,default='')
-    budget = models.IntegerField(default =0)
+    paid = models.BooleanField(default=False)
+    referring_domain = models.CharField(max_length=1000,default='')
+    budget = models.FloatField(default =0.0)
     currency = models.CharField(max_length=10,default='')
     budget_type = models.CharField(max_length=3,default='')
     started_at = models.DateField(default=timezone.now)
@@ -56,11 +57,11 @@ class MarketingEvents(models.Model):
     description = models.CharField(max_length=100,default='')
     manage_url = models.CharField(max_length=100,default='')
     preview_url = models.CharField(max_length=100,default='')
-    marketing_source = models.CharField(max_length=100,default='')
+    marketing_resource = models.CharField(max_length=1000,default='')
 
 class Address(models.Model):
     address_type = models.CharField(max_length=200,default='')
-    address_id = models.CharField(max_length=200,default='')
+    address_id = models.CharField(max_length=200,primary_key=True)
     company =  models.CharField(max_length=200,default='')
     address1 =  models.CharField(max_length=200,default='')
     address2 =  models.CharField(max_length=200,default='')
@@ -87,23 +88,24 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=200,default='')
     order_count = models.IntegerField(default=0)
     state = models.CharField(max_length=100,default='')
-    total_spent = models.IntegerField(default=0)
+    total_spent = models.FloatField(default=0.0)
     last_order_id = models.CharField(max_length=200,default='')
     multi_pass_identifier = models.CharField(max_length=200,default='')
     tax_exempt=models.BooleanField(default=False)
     tags = models.CharField(max_length=1000)
     last_order_name = models.CharField(max_length=400,default='')
     currency = models.CharField(max_length=100,default='')
+    note = models.CharField(max_length=1000,default='')
     marketing_optin_level = models.CharField(max_length=100,default='')
 
 class CustomerAddress(models.Model):
-    customer_id = models.ForeignKey(Customer,on_delete=models.CASCADE)
-    address_id = models.ForeignKey(Address,on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
+    address = models.ForeignKey(Address,on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
 
 class PrerequisiteCustomer(models.Model):
-    price_rule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    customer_id = models.ForeignKey(Customer,on_delete =models.CASCADE)
+    price_rule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer,on_delete =models.CASCADE)
 
 class AbandonCart(models.Model):
     buyer_accepts_marketing=models.BooleanField(default=False)
@@ -111,7 +113,7 @@ class AbandonCart(models.Model):
     completed_at = models.DateField(default=timezone.now)
     created_at = models.DateField(default=timezone.now)
     customer_locale = models.CharField(max_length=10,default='')
-    customer_id = models.ForeignKey(Customer,on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
     device_id = models.CharField(max_length=200,default='')
     gateway  = models.CharField(max_length=200,default='')
     id = models.CharField(max_length=200,primary_key=True)
@@ -141,7 +143,7 @@ class Order(models.Model):
     closed_at = models.DateField(default=timezone.now)
     created_at = models.DateField(default=timezone.now)
     currency = models.CharField(max_length=6,default='')
-    customer_id = models.ForeignKey(Customer,on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer,on_delete=models.CASCADE)
     customer_locale = models.CharField(max_length=20,default='')
     order_email = models.CharField(max_length=200,default='')
     order_financial_status = models.CharField(max_length=30,default='')
@@ -168,7 +170,7 @@ class Order(models.Model):
     total_weight = models.CharField(max_length=20,default='')
 
 class ClientOrder(models.Model):
-    order_id = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
     accept_language = models.CharField(max_length=60,default='')
     browser_height = models.CharField(max_length=200,default='')
     browser_width = models.CharField(max_length=200,default='')
@@ -177,8 +179,8 @@ class ClientOrder(models.Model):
 
 
 class OrderdiscountCode(models.Model):
-    order_id = models.ForeignKey(Order,on_delete=models.CASCADE,default='')
-    abandoncart_id = models.ForeignKey(AbandonCart,on_delete=models.CASCADE)    
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,default='')
+    abandoncart = models.ForeignKey(AbandonCart,on_delete=models.CASCADE)    
     discount_codes = models.ForeignKey(DiscountCode,on_delete=models.CASCADE)
     discount_price = models.CharField(max_length=200,default='')
     discount_type  = models.CharField(max_length=200,default='')
@@ -194,16 +196,13 @@ class Collection(models.Model):
     update_at = models.DateField(default=timezone.now)
 
 class PriceRuleEntity(models.Model):
-    price_rule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    collection_id = models.ForeignKey(Collection,on_delete=models.CASCADE)
+    price_rule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection,on_delete=models.CASCADE)
 
 class Product(models.Model):
     body_html = models.CharField(max_length=2000,default='')
     handle = models.CharField(max_length=200,default='')
     id  = models.CharField(max_length=200,primary_key=True)
-    option_1=models.CharField(max_length=200,default = '')
-    option_2= models.CharField(max_length=200,default = '')
-    option_3 = models.CharField(max_length=200,default = '')
     product_type = models.CharField(max_length=200,default='')
     published_scope = models.CharField(max_length=200,default='')
     status = models.CharField(max_length=100,default='')
@@ -215,16 +214,16 @@ class Product(models.Model):
     vendor = models.CharField(max_length=200,default='')
 
 class PrerequisiteProducts(models.Model):
-    pricerule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    product_id = models.ForeignKey(Product,on_delete=models.CASCADE)
+    pricerule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
 
 
 class PriceRuleProduct(models.Model):
-    price_rule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    product_id = models.ForeignKey(Product,on_delete=models.CASCADE)
+    price_rule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
 
 class ProductImage(models.Model):
-    product_id = models.ForeignKey(Product,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
     id = models.CharField(max_length=200,primary_key=True)
     position = models.IntegerField(default=-1)
     src = models.CharField(max_length=200,default='')
@@ -234,15 +233,16 @@ class ProductImage(models.Model):
 
 
 class Collect(models.Model):
-    collection_id = models.ForeignKey(Collection,on_delete=models.CASCADE)
+    id = models.CharField(max_length=200,primary_key=True)
+    collection = models.ForeignKey(Collection,on_delete=models.CASCADE)
     created_at = models.DateField(default=timezone.now)
     position = models.IntegerField(default=-1)
-    product_id = models.ForeignKey(Product,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
     updated_at = models.DateField(default=timezone.now)
 
 
 class CollectionImage(models.Model):
-    collection_id = models.ForeignKey(Collection,on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection,on_delete=models.CASCADE)
     src = models.CharField(max_length=200,default='')
     alt = models.CharField(max_length=20,default='')
     created_at = models.DateField(default=timezone.now)
@@ -251,7 +251,7 @@ class CollectionImage(models.Model):
 
 
 class OrderLocation(models.Model):
-    lineitem_id = models.ForeignKey(Order,on_delete=models.CASCADE)
+    lineitem = models.ForeignKey(Order,on_delete=models.CASCADE)
     country_code = models.CharField(max_length=20,default='')
     province_code = models.CharField(max_length=20,default='')
     name = models.CharField(max_length=200,default='')
@@ -261,12 +261,12 @@ class OrderLocation(models.Model):
     zip_code = models.CharField(max_length=20,default='')
 
 class orderNote(models.Model):
-    order_id = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
     note_name = models.CharField(max_length=20,default='')
     note_value = models.CharField(max_length=400,default='')
 
 class orderTag(models.Model):
-    order_id = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
     tag_name = models.CharField(max_length=40,default='')
     
 class ProductVariant(models.Model):
@@ -275,7 +275,7 @@ class ProductVariant(models.Model):
     fullfillment_service=  models.CharField(max_length=200,default='')
     grams =  models.FloatField(default=0.0)
     id = models.CharField(max_length=200,primary_key=True)
-    image_id = models.ForeignKey(ProductImage,on_delete=models.CASCADE)
+    image_id = models.CharField(max_length=200,default='')
     inventory_item_id = models.CharField(max_length=200,default='')
     position =models.CharField(max_length=200,default='')
     sku = models.CharField(max_length=200,default='') 
@@ -283,34 +283,35 @@ class ProductVariant(models.Model):
     title = models.CharField(max_length=200,default='')
     updated_at = models.DateField(default=timezone.now)
     weight = models.FloatField(default=0.0)
-    weight_unit = models.FloatField(max_length=10)        
+    weight_unit = models.CharField(max_length=10,default='')        
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
 
 class PrerequisiteVariants(models.Model):
-    pricerule_id=models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    varaint_id = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
+    pricerule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    varaint = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
 
 class PriceProductVariant(models.Model):
-    price_rule_id = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
-    product_variant_id = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
+    price_rule = models.ForeignKey(PriceRule,on_delete=models.CASCADE)
+    product_variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
 
 
 class AbandonCartLineItem(models.Model):
-    abandon_cart_id = models.ForeignKey(AbandonCart,on_delete=models.CASCADE)
+    abandon_cart = models.ForeignKey(AbandonCart,on_delete=models.CASCADE)
     fullfillment_service = models.CharField(max_length=200,default='')
     fullfillment_status = models.CharField(max_length=200,default='')
     required_shipping = models.BooleanField(default=False)
     sku = models.CharField(max_length=200,default='')
     title = models.CharField(max_length=200,default='')
-    variant_id= models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
     variant_title = models.CharField(max_length=200,default='')
     vendor = models.CharField(max_length=200,default='')
 class OrderLineItem(models.Model):
-    order_id = models.ForeignKey(Order,on_delete=models.CASCADE)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
     fullfilment_quantity=models.CharField(max_length=200,default='')
     fullfilmen_service = models.CharField(max_length=200,default='')
     fullfilment_status = models.CharField(max_length=20,default='')
-    product_id = models.ForeignKey(Product,on_delete=models.CASCADE)
-    variant_id = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
+    product = models.ForeignKey(Product,on_delete=models.CASCADE)
+    variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
     vendor = models.CharField(max_length=200,default='')
     name = models.CharField(max_length=200,default='')
     gift_card = models.CharField(max_length=200,default='')
@@ -320,3 +321,10 @@ class OrderLineItem(models.Model):
     tip_payment_method = models.CharField(max_length=20,default='')
     total_discount_amount = models.FloatField(default=0.0)
     id = models.CharField(max_length=200,primary_key=True)
+
+class ProductOptions(models.Model):
+    id = models.CharField(max_length=200,primary_key=True)
+    product=models.ForeignKey(Product,on_delete=models.CASCADE)
+    name = models.CharField(max_length=200,default='')
+    position = models.IntegerField(default=1)
+    values = models.CharField(max_length=1000,default='')

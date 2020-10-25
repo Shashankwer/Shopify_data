@@ -1,9 +1,7 @@
-from django.shortcuts import render,redirect
 import uuid
-import os
-import json
 import logging
-from django.http import HttpRequest,HttpResponse,HttpResponseRedirect,Http404
+from django.shortcuts import render,redirect
+from django.http import HttpResponse,HttpResponseRedirect,Http404
 from . import helpers
 
 # Create your views here.
@@ -11,7 +9,7 @@ SHOPIFY_CLIENT= None
 ACCESS_TOKEN = None
 NOUNCE = None 
 ACCESS_MODE = [] #defaults to offline access mode if left blank or omitted. 
-SCOPES = ['read_products','read_orders','read_all_orders']
+SCOPES = ['read_products','read_orders','read_all_orders','read_marketing_events','read_customers','read_product_listings','read_price_rules']
 def validate_url(dic)->bool:
     hmac = dic.get('hmac')
     sorted(dic)
@@ -45,8 +43,29 @@ def app_installed(requests):
     if redirects:
         print("Hello World!!!")
         return redirect('gather_data/')
-    return Http404()    
+    return Http404()
     
 def gather_data(request):
     shop = helpers.get_shop_details()
-    return HttpResponse(f'<html><p>{shop.address1}</p><p>{shop.address2}</p><p>{shop.checkout_api_supported}</p><p>{shop.enabled_presentment_currencies[0]}</p><p>{shop.setup_required}</p><p>{shop.cookie_consent_level}</p></html>')
+    market = helpers.get_marketingEvents_details()
+    customers = helpers.get_customer_details()
+    product = helpers.get_product_details()
+    collection = helpers.get_smartcollection_details()+helpers.get_customcollection_details()
+    collect = helpers.get_collect_details()
+    price_rules = helpers.get_price_rule_details()
+    
+    return HttpResponse(f'''
+    <html>
+    <p>{shop.address1}</p>
+    <p>{shop.address2}</p>
+    <p>{shop.checkout_api_supported}</p>
+    <p>{shop.enabled_presentment_currencies[0]}</p>
+    <p>{shop.setup_required}</p>
+    <p>{shop.cookie_consent_level}</p>
+    <p>{product}</p>
+    <p>{customers}</p>
+    <p>{collection}</p>
+    <p>{collect}</p>
+    <p>{(price_rules)}</p>
+    </html>
+    ''')

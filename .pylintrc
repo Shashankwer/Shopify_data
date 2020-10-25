@@ -1,0 +1,5 @@
+[TYPECHECK]
+ignored-classes=shopify,django,StoreToken,Connection,PriceRule,logging,Customer,Address,Order,DiscountCode,AbandonCart,Collection,Product,ProductImage,OrderLineItem,ProductVariant
+
+[MASTER]
+disable= C0114,C0115,C0116,C0326,W0603,C0103,C603,R0913,E0501,W0291,C0303,R0914,R0201,E501
