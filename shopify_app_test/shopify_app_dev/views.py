@@ -53,19 +53,17 @@ def gather_data(request):
     collection = helpers.get_smartcollection_details()+helpers.get_customcollection_details()
     collect = helpers.get_collect_details()
     price_rules = helpers.get_price_rule_details()
+    print(price_rules)
+    abandon_cart = helpers.get_abandon_cart()
+    orders = helpers.get_order_details()
+    context = {'products':product,
+               'customers':customers,
+               'market':market,
+               'collection':collection,
+               'price_rules':price_rules,
+               'abandon_cart':abandon_cart,
+               'orders':orders}
+    return render(request,"index.html",context)
     
-    return HttpResponse(f'''
-    <html>
-    <p>{shop.address1}</p>
-    <p>{shop.address2}</p>
-    <p>{shop.checkout_api_supported}</p>
-    <p>{shop.enabled_presentment_currencies[0]}</p>
-    <p>{shop.setup_required}</p>
-    <p>{shop.cookie_consent_level}</p>
-    <p>{product}</p>
-    <p>{customers}</p>
-    <p>{collection}</p>
-    <p>{collect}</p>
-    <p>{(price_rules)}</p>
-    </html>
-    ''')
+    
+    

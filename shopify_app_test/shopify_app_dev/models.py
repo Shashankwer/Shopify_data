@@ -1,7 +1,7 @@
-from django.db import models
+from datetime import date
 from django.db import models
 from django.utils import timezone
-from datetime import date
+
 
 class StoreToken(models.Model):
     token = models.CharField(max_length=1000)
@@ -182,8 +182,6 @@ class OrderdiscountCode(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,default='')
     abandoncart = models.ForeignKey(AbandonCart,on_delete=models.CASCADE)    
     discount_codes = models.ForeignKey(DiscountCode,on_delete=models.CASCADE)
-    discount_price = models.CharField(max_length=200,default='')
-    discount_type  = models.CharField(max_length=200,default='')
 
 class Collection(models.Model):
     body_html = models.CharField(max_length=2000,default='')
@@ -303,8 +301,8 @@ class AbandonCartLineItem(models.Model):
     sku = models.CharField(max_length=200,default='')
     title = models.CharField(max_length=200,default='')
     variant = models.ForeignKey(ProductVariant,on_delete=models.CASCADE)
-    variant_title = models.CharField(max_length=200,default='')
     vendor = models.CharField(max_length=200,default='')
+
 class OrderLineItem(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE)
     fullfilment_quantity=models.CharField(max_length=200,default='')

@@ -61,9 +61,9 @@ PriceRule--> Done
 PriceRuleSavedSearch --->Done
 PrerequisiteCustomer--> Done
 PriceRuleEntity-->PrerequisiteProducts-->PriceRuleProduct-->PrerequisiteVariants-->PriceProductVariant-->Done
-DiscountCode
+DiscountCode -->Done
 AbandonCart-->AbandonCartLineItem
-Order  -->OrderLocation-->orderNote-->orderTag-->OrderLineItem
+Order-->OrderLocation-->orderNote-->orderTag-->OrderLineItem
 ClientOrder
 OrderdiscountCode
 
@@ -445,6 +445,71 @@ def get_price_rule_details():
         return count
     return "Error"
 
+def load_abandon_cart(abandon):
+    STORE_CLIENT.loadAbandonCart(
+        id=getValidStrField(abandon.id),
+        customer_id=getValidStrField(abandon.customer.id),
+        user_id=getValidStrField(abandon.user_id),
+        device_id=getValidStrField(abandon.device_id),
+        buyer_accepts_marketing=getValidBooleanField(abandon.buyer_accepts_marketing),
+        cart_token=getValidStrField(abandon.cart_token),
+        completed_at=getValidDate(abandon.completed_at),
+        created_at=getValidDate(abandon.created_at),
+        customer_locale=getValidStrField(abandon.buyer_accepts_marketing),
+        gateway=getValidStrField(abandon.gateway),
+        landing_site=getValidStrField(abandon.landing_site),
+        location=getValidStrField(abandon.location_id),
+        note=getValidStrField(abandon.note),
+        currency_code=getValidStrField(abandon.currency),
+        referring_site=getValidStrField(abandon.referring_site),
+        source_name=getValidStrField(abandon.source_name),
+        subtotal_price=getValidStrField(abandon.subtotal_price),
+        tokens=getValidStrField(abandon.tokens),
+        total_discount=getValidFloatField(abandon.total_discounts),
+        total_price=getValidFloatField(abandon.total_price),
+        total_weight=getValidFloatField(abandon.total_weight),
+        updated_at=getValidDate(abandon.updated_at),
+    )
+    abandon_id = abandon.id
+    for line in abandon.line_items:
+        STORE_CLIENT.loadAbandonCartLineItem(
+            abandon_cart_id=abandon_id, 
+            variant_id=getValidStrField(line.variant_id),
+            fullfillment_service=getValidStrField(line.fulfillment_service),
+            fullfillment_status='',
+            required_shipping=getValidBooleanField(line.requires_shipping),
+            sku=getValidStrField(line.sku),
+            title=getValidStrField(line.title),
+            variant_title=getValidStrField(line.variant_title),
+            vendor=getValidStrField(line.vendor),
+        )
+
+    for discount in abandon.discount_codes:
+        STORE_CLIENT.loadOrderdiscountCode(
+            discount_code=getValidStrField(discount.id), 
+            order_id=None,
+            abandoncart_id=abandon_id,
+        )
+
+def get_abandon_cart():
+    if isAppInstalled():
+        count = 0
+        abandons,rel = STORE_CLIENT.getAbandondedCart(link='')
+        for abandon in abandons:
+            if not STORE_CLIENT.isAbandonPresent(abandon.id):
+                load_abandon_cart(abandon)
+        count+=len(abandons)
+        while rel !='':
+            abandons,rel = STORE_CLIENT.getAbandondedCart(link=rel)
+            for abandon in abandons:
+                if not STORE_CLIENT.isAbandonPresent(abandon.id):
+                    load_abandon_cart(abandon)
+        count+=len(abandons)
+        return count
+    return "Error"
+
+
+
 def load_discount_code(discount_code):
     STORE_CLIENT.loadDiscountCode(
         id=getValidStrField(discount_code.id), 
@@ -454,11 +519,96 @@ def load_discount_code(discount_code):
         created_at=getValidDate(discount_code.created_at),
         updated_at=getValidDate(discount_code.updated_at)
     )
+
+def load_order(order):
+    STORE_CLIENT.loadOrder(
+        id=getValidStrField(order.id),
+        customer_id=getValidStrField(order.customer.id),
+        app_id=getValidStrField(order.app_id),
+        browser_ip=getValidStrField(order.browser_ip),
+        buyer_accepts_marketing=getValidBooleanField(order.buyer_accepts_marketing),
+        cancel_reason=getValidStrField(order.browser_ip),
+        cancelled_at=getValidDate(order.cancelled_at),
+        cart_token=getValidDate(order.cart_token),
+        checkout_id=getValidStrField(order.checkout_id),
+        closed_at=getValidDate(order.closed_at),
+        created_at=getValidDate(order.created_at),
+        currency=getValidStrField(order.currency),
+        customer_locale=getValidStrField(order.customer_locale),
+        order_email=getValidStrField(order.email),
+        order_financial_status=getValidStrField(order.financial_status),
+        fullfillment_status=getValidStrField(order.fulfillment_status),
+        gateway=getValidStrField(order.gateway),
+        landing_site=getValidStrField(order.landing_site),
+        landing_site_ref=getValidStrField(order.landing_site_ref),
+        name=getValidStrField(order.name),
+        notes=getValidStrField(order.note),
+        number=getValidIntegerField(order.number),
+        order_number=getValidIntegerField(order.order_number),
+        payment_gateway=getValidStrField(order.payment_gateway_names),
+        presenment_currency=getValidStrField(order.presentment_currency),
+        referring_site=getValidStrField(order.referring_site),
+        source_name=getValidStrField(order.source_name),
+        total_discount=getValidFloatField(order.total_discounts),
+        total_line_item_price=getValidFloatField(order.total_line_items_price),
+        total_price=getValidFloatField(order.total_price),
+        total_line_tax=0.0,
+        total_tip=getValidFloatField(order.total_tip_received),
+        user_id=getValidFloatField(order.user_id),
+        update_at=getValidDate(order.updated_at),
+        total_weight=getValidStrField(order.total_weight)
+    )
+    order_id=order.id
     
+    STORE_CLIENT.loadClientOrder(
+        order_id=order_id, 
+        accept_language=getValidStrField(order.accept_language), 
+        browser_height=getValidStrField(order.browser_height), 
+        browser_width=getValidStrField(order.browser_width),
+        session_hash=getValidStrField(order.session_hash),
+        user_hash=getValidStrField(order.user_agent)
+    )
+    STORE_CLIENT.loadorderTag(order_id=order_id, tag_name=getValidStrField(order.tags))
+    for note in order.note_attributes:
+        STORE_CLIENT.loadorderNote(order_id, note_name=getValidStrField(note.name), note_value=getValidStrField(note.value))
+    for item in order.line_items:
+        STORE_CLIENT.loadOrderLineItem(
+         id=getValidStrField(item.id),
+         order_id=order_id,
+         product_id=getValidStrField(item.product_id),
+         variant_id=getValidStrField(item.variant_id),
+         fullfilment_quantity=getValidStrField(item.fulfillable_quantity),
+         fullfilment_service=getValidStrField(item.fulfillment_service),
+         fullfilment_status=getValidStrField(item.fulfillment_status),
+         vendor=getValidStrField(item.vendor),
+         name=getValidStrField(item.name),
+         gift_card=getValidStrField(item.gift_card),
+         taxable=getValidBooleanField(item.taxable),
+         tip_payment_gateway=getValidStrField(item.taxable),
+         tip_payment_method=getValidStrField(item.tip_payment_gateway),
+         total_discount_amount=getValidFloatField(item.discount_amount)
+         )
+
+    for discount in order.discount_codes:
+        STORE_CLIENT.loadOrderdiscountCode(
+            discount_code=getValidStrField(discount.code), 
+            order_id=order_id)
+
 def get_order_details():
     if isAppInstalled():
-        print("Success!!")
-        return "Testing"
+        count = 0
+        orders,rel = STORE_CLIENT.getOrder(link='')
+        for order in orders:
+            if not STORE_CLIENT.isOrderPresent(order.id):
+                load_order(order)
+        count+=len(orders)
+        while rel !='':
+            orders,rel = STORE_CLIENT.getOrder(link='')
+            for order in orders:
+                if not STORE_CLIENT.isOrderPresent(order.id):
+                    load_order(order)
+        count+=len(orders)
+        return count
     return "Error"
        
 
